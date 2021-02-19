@@ -4,8 +4,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
+
+// [assembly: JsonSerializable(typeof(object[]))]
 
 namespace Microsoft.JSInterop.WebAssembly
 {
@@ -68,8 +71,9 @@ namespace Microsoft.JSInterop.WebAssembly
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerOptions);
+            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerContext);
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
+            // throw new System.NotSupportedException(JsonSerializerContext.GetOptions().GetTypesInDictionary());
         }
 
         internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)

@@ -6,10 +6,12 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using Microsoft.JSInterop.JsonSourceGeneration;
 
 namespace Microsoft.JSInterop
 {
@@ -41,12 +43,19 @@ namespace Microsoft.JSInterop
                     new JSObjectReferenceJsonConverter(this),
                 }
             };
+
+            JsonSerializerContext = new JsonContext(JsonSerializerOptions);
         }
 
         /// <summary>
         /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
         /// </summary>
         protected internal JsonSerializerOptions JsonSerializerOptions { get; }
+
+        /// <summary>
+        /// Gets the <see cref="System.Text.Json.JsonSerializerOptions"/> used to serialize and deserialize interop payloads.
+        /// </summary>
+        protected internal JsonSerializerContext JsonSerializerContext { get; }
 
         /// <summary>
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
