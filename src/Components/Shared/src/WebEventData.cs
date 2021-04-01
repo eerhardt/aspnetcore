@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.WebAssembly.JsonSourceGeneration;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Web
@@ -71,7 +72,8 @@ namespace Microsoft.AspNetCore.Components.Web
 
                 // For custom events, the args type is determined from the associated delegate
                 var eventArgsType = renderer.GetEventArgsType(eventHandlerId);
-                return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, jsonSerializerOptions)!;
+                // TODO: this is a hack, need to get the JsonContext from somewhere
+                return (EventArgs)JsonSerializer.Deserialize(eventArgsJson, eventArgsType, new JsonContext(JsonSerializerOptionsProvider.Options))!;
             }
             catch (Exception e)
             {
@@ -220,8 +222,8 @@ namespace Microsoft.AspNetCore.Components.Web
         }
 
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members are preserved by DynamicDependencies.")]
-        // This should use JSON source generation
-        static T Deserialize<[DynamicallyAccessedMembers(JsonSerialized)] T>(string json) => JsonSerializer.Deserialize<T>(json, JsonSerializerOptionsProvider.Options)!;
+        // TODO: this is a hack, need to get the JsonContext from somewhere
+        static T Deserialize<[DynamicallyAccessedMembers(JsonSerialized)] T>(string json) => JsonSerializer.Deserialize<T>(json, new JsonContext(JsonSerializerOptionsProvider.Options))!;
 
         private static ChangeEventArgs DeserializeChangeEventArgs(string eventArgsJson)
         {

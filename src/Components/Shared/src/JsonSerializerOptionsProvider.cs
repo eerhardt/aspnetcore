@@ -7,10 +7,14 @@ namespace Microsoft.AspNetCore.Components
 {
     internal static class JsonSerializerOptionsProvider
     {
-        public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+        public static readonly JsonSerializerOptions Options = InitOptions();
+
+        private static JsonSerializerOptions InitOptions()
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            PropertyNameCaseInsensitive = true,
-        };
+            JsonSerializerOptions options = JsonSerializerOptions.CreateForSizeOpts();
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.PropertyNameCaseInsensitive = true;
+            return options;
+        }
     }
 }

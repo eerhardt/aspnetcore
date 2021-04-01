@@ -32,17 +32,12 @@ namespace Microsoft.JSInterop
         /// </summary>
         protected JSRuntime()
         {
-            JsonSerializerOptions = new JsonSerializerOptions
-            {
-                MaxDepth = 32,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true,
-                Converters =
-                {
-                    new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter(this),
-                }
-            };
+            JsonSerializerOptions = JsonSerializerOptions.CreateForSizeOpts();
+            JsonSerializerOptions.MaxDepth = 32;
+            JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            JsonSerializerOptions.Converters.Add(new DotNetObjectReferenceJsonConverterFactory(this));
+            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter(this));
 
             JsonSerializerContext = new JsonContext(JsonSerializerOptions);
         }
@@ -131,7 +126,7 @@ namespace Microsoft.JSInterop
                 }
 
                 var argsJson = args is not null && args.Length != 0 ?
-                    JsonSerializer.Serialize(args, JsonSerializerOptions) :
+                    JsonSerializer.Serialize(args, JsonSerializerContext) :
                     null;
                 var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
@@ -201,7 +196,7 @@ namespace Microsoft.JSInterop
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
 
-                    var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
+                    var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerContext);
                     TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else

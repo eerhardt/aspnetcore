@@ -6,12 +6,18 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
+using System.Text.Json.SourceGeneration;
+using Microsoft.AspNetCore.Components.WebAssembly.JsonSourceGeneration;
+
+[assembly: JsonSerializable(typeof(Microsoft.AspNetCore.Components.ComponentParameter[]))]
+[assembly: JsonSerializable(typeof(IList<object>), CanBeDynamic=true)]
 
 namespace Microsoft.AspNetCore.Components
 {
     internal class WebAssemblyComponentParameterDeserializer
     {
         private readonly ComponentParametersTypeCache _parametersCache;
+        private readonly static JsonContext s_context = new JsonContext(WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
         public WebAssemblyComponentParameterDeserializer(
             ComponentParametersTypeCache parametersCache)
@@ -60,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
                         var parameterValue = JsonSerializer.Deserialize(
                             value.GetRawText(),
                             parameterType,
-                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                            s_context);
 
                         parametersDictionary[definition.Name] = parameterValue;
                     }
@@ -79,13 +85,13 @@ namespace Microsoft.AspNetCore.Components
         // This should use JSON source generation
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
         {
-            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, s_context)!;
         }
 
         [RequiresUnreferencedCode("This API attempts to JSON deserialize types which might be trimmed.")]
         public IList<object> GetParameterValues(string parameterValues)
         {
-            return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions)!;
+            return JsonSerializer.Deserialize<IList<object>>(parameterValues, s_context)!;
         }
     }
 }

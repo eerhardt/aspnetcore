@@ -7,11 +7,17 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Lifetime;
+using System.Text.Json.SourceGeneration;
+using Microsoft.AspNetCore.Components.WebAssembly.JsonSourceGeneration;
+
+[assembly: JsonSerializable(typeof(Dictionary<string, byte[]>))]
 
 namespace Microsoft.AspNetCore.Components
 {
     internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
     {
+        private readonly static JsonContext s_context = new JsonContext(JsonSerializerOptions.CreateForSizeOpts());
+
         public PrerenderComponentApplicationStore()
         {
             ExistingState = new();
@@ -25,7 +31,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(existingState));
             }
 
-            ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(Convert.FromBase64String(existingState)) ??
+            ExistingState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(Convert.FromBase64String(existingState), s_context.DictionarySystemStringSystemByteArray) ??
                 throw new ArgumentException(nameof(existingState));
         }
 
