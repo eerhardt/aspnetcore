@@ -32,7 +32,7 @@ namespace Microsoft.JSInterop
         /// </summary>
         protected JSRuntime()
         {
-            JsonSerializerOptions = JsonSerializerOptions.CreateForSizeOpts();
+            JsonSerializerOptions = new JsonSerializerOptions();
             JsonSerializerOptions.MaxDepth = 32;
             JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             JsonSerializerOptions.PropertyNameCaseInsensitive = true;
@@ -126,7 +126,7 @@ namespace Microsoft.JSInterop
                 }
 
                 var argsJson = args is not null && args.Length != 0 ?
-                    JsonSerializer.Serialize(args, JsonSerializerContext) :
+                    JsonSerializer.Serialize(args, typeof(object[]), JsonSerializerContext) :
                     null;
                 var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 

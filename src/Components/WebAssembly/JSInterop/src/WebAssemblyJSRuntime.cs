@@ -71,7 +71,7 @@ namespace Microsoft.JSInterop.WebAssembly
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
-            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerContext);
+            var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, typeof(object[]), JsonSerializerContext);
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
             // throw new System.NotSupportedException(JsonSerializerContext.GetOptions().GetTypesInDictionary());
         }

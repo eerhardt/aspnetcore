@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
 
         private static JsonSerializerOptions InitOptions()
         {
-            JsonSerializerOptions options = JsonSerializerOptions.CreateForSizeOpts();
+            JsonSerializerOptions options = new JsonSerializerOptions();
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             options.PropertyNameCaseInsensitive = true;
             options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;

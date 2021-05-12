@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Lifetime;
-using System.Text.Json.SourceGeneration;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.WebAssembly.JsonSourceGeneration;
 
 [assembly: JsonSerializable(typeof(Dictionary<string, byte[]>))]
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
 {
     internal class PrerenderComponentApplicationStore : IComponentApplicationStateStore
     {
-        private readonly static JsonContext s_context = new JsonContext(JsonSerializerOptions.CreateForSizeOpts());
+        private readonly static JsonContext s_context = new JsonContext(new JsonSerializerOptions());
 
         public PrerenderComponentApplicationStore()
         {

@@ -8,6 +8,8 @@
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <NoWarn>$(NoWarn);CS8603</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

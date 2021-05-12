@@ -8,6 +8,7 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.JSInterop.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
+    <Reference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>

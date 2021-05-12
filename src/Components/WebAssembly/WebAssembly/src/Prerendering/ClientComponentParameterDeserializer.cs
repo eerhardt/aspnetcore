@@ -5,12 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
-using System.Text.Json.SourceGeneration;
 using Microsoft.AspNetCore.Components.WebAssembly.JsonSourceGeneration;
 
 [assembly: JsonSerializable(typeof(Microsoft.AspNetCore.Components.ComponentParameter[]))]
-[assembly: JsonSerializable(typeof(IList<object>), CanBeDynamic=true)]
+[assembly: JsonSerializable(typeof(List<JsonElement>))]
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components
 
         public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
 
-        public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
+        public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, List<JsonElement> parameterValues)
         {
             var parametersDictionary = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
 
@@ -82,16 +82,15 @@ namespace Microsoft.AspNetCore.Components
 
         [DynamicDependency(JsonSerialized, typeof(ComponentParameter))]
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "The correct members will be preserved by the above DynamicDependency.")]
-        // This should use JSON source generation
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
         {
-            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, s_context)!;
+            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, s_context.ComponentParameterArray)!;
         }
 
         [RequiresUnreferencedCode("This API attempts to JSON deserialize types which might be trimmed.")]
-        public IList<object> GetParameterValues(string parameterValues)
+        public List<JsonElement> GetParameterValues(string parameterValues)
         {
-            return JsonSerializer.Deserialize<IList<object>>(parameterValues, s_context)!;
+            return JsonSerializer.Deserialize(parameterValues, s_context.ListSystemTextJsonJsonElement)!;
         }
     }
 }

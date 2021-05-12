@@ -8,7 +8,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <Trimmable>true</Trimmable>
-    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <NoWarn>$(NoWarn);CS8603</NoWarn>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>

@@ -3,15 +3,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using System.Text.Json.SourceGeneration;
 using System.Text.Json.Serialization;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
-using System.Text.Json.Serialization;
 
 [assembly: JsonSerializable(typeof(object[]))]
-[assembly: JsonSerializable(typeof(string), CanBeDynamic = true)]
-[assembly: JsonSerializable(typeof(int), CanBeDynamic = true)]
-[assembly: JsonSerializable(typeof(bool), CanBeDynamic = true)]
+[assembly: JsonSerializable(typeof(string))]
+[assembly: JsonSerializable(typeof(int))]
+[assembly: JsonSerializable(typeof(bool))]
 
 namespace Microsoft.JSInterop
 {
@@ -23,11 +21,11 @@ namespace Microsoft.JSInterop
         [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
         internal TValue Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
-            var options = JsonSerializerContext.GetOptions();
+            var options = JsonSerializerContext.Options;
 
             var resultJson = InvokeJS(
                 identifier,
-                JsonSerializer.Serialize(args, JsonSerializerContext),
+                JsonSerializer.Serialize(args, typeof(object[]), JsonSerializerContext),
                 JSCallResultTypeHelper.FromGeneric<TValue>(),
                 targetInstanceId);
 
@@ -39,7 +37,7 @@ namespace Microsoft.JSInterop
                 return default!;
             }
 
-            return JsonSerializer.Deserialize<TValue>(resultJson, JsonSerializerContext)!;
+            return (TValue)JsonSerializer.Deserialize(resultJson, typeof(TValue), JsonSerializerContext)!;
         }
 
         /// <summary>
