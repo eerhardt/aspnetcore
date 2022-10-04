@@ -62,6 +62,7 @@ Microsoft.AspNetCore.Http.ProblemDetailsContext.HttpContext.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.get -> Microsoft.AspNetCore.Mvc.ProblemDetails!
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetails.init -> void
 Microsoft.AspNetCore.Http.ProblemDetailsContext.ProblemDetailsContext() -> void
+Microsoft.AspNetCore.Http.RequestDelegateFactoryFunc
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(Microsoft.AspNetCore.Routing.RouteValueDictionary? dictionary) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? values) -> void
 Microsoft.AspNetCore.Routing.RouteValueDictionary.RouteValueDictionary(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string?>>? values) -> void

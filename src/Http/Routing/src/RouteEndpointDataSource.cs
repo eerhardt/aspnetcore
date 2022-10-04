@@ -51,7 +51,8 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         RoutePattern pattern,
         Delegate routeHandler,
         IEnumerable<string>? httpMethods,
-        bool isFallback)
+        bool isFallback,
+        RequestDelegateFactoryFunc? requestDelegateFactoryFunc)
     {
         var conventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
         var finallyConventions = new ThrowOnAddAfterEndpointBuiltConventionCollection();
@@ -66,6 +67,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         {
             RoutePattern = pattern,
             RouteHandler = routeHandler,
+            RequestDelegateFactoryFunc = requestDelegateFactoryFunc,
             HttpMethods = httpMethods,
             RouteAttributes = routeAttributes,
             Conventions = conventions,
@@ -221,7 +223,11 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
         // If no convention has modified builder.RequestDelegate, we can use the RequestDelegate returned by the RequestDelegateFactory directly.
         var conventionOverriddenRequestDelegate = ReferenceEquals(builder.RequestDelegate, redirectRequestDelegate) ? null : builder.RequestDelegate;
 
-        if (isRouteHandler || builder.FilterFactories.Count > 0)
+        if (entry.RequestDelegateFactoryFunc is not null)
+        {
+            factoryCreatedRequestDelegate = entry.RequestDelegateFactoryFunc(entry.RouteHandler, builder);
+        }
+        else if (isRouteHandler || builder.FilterFactories.Count > 0)
         {
             rdfOptions ??= CreateRDFOptions(entry, pattern, builder);
 
@@ -307,6 +313,7 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
     {
         public RoutePattern RoutePattern { get; init; }
         public Delegate RouteHandler { get; init; }
+        public RequestDelegateFactoryFunc? RequestDelegateFactoryFunc;
         public IEnumerable<string>? HttpMethods { get; init; }
         public RouteAttributes RouteAttributes { get; init; }
         public ThrowOnAddAfterEndpointBuiltConventionCollection Conventions { get; init; }

@@ -16,7 +16,7 @@ public sealed class RouteHandlerBuilder : IEndpointConventionBuilder
 
     /// <summary>
     /// Instantiates a new <see cref="RouteHandlerBuilder" /> given a ThrowOnAddAfterEndpointBuiltConventionCollection from
-    /// <see cref="RouteEndpointDataSource.AddRouteHandler(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?, bool)"/>.
+    /// <see cref="RouteEndpointDataSource.AddRouteHandler(Routing.Patterns.RoutePattern, Delegate, IEnumerable{string}?, bool, Http.RequestDelegateFactoryFunc?)"/>.
     /// </summary>
     /// <param name="conventions">The convention list returned from <see cref="RouteEndpointDataSource"/>.</param>
     /// <param name="finallyConventions">The final convention list returned from <see cref="RouteEndpointDataSource"/>.</param>

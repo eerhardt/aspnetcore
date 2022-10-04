@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -62,7 +64,13 @@ object Json() => new { message = "Hello, World!" };
 app.MapGet("/json", Json).WithTags("json");
 
 string SayHello(string name) => $"Hello, {name}!";
-app.MapGet("/hello/{name}", SayHello);
+app.MapGet("/hello/{name}", SayHello, RequestDelegateThunks.Thunk0);
+app.MapGet("/helloFiltered/{name}", SayHello, RequestDelegateThunks.Thunk0)
+    .AddEndpointFilter((ic, next) =>
+    {
+        Console.WriteLine(ic.GetArgument<string>(0));
+        return next(ic);
+    });
 
 app.MapGet("/null-result", IResult () => null!);
 
@@ -102,5 +110,161 @@ public class TodoBindable : IBindableFromHttpContext<TodoBindable>
     public static ValueTask<TodoBindable?> BindAsync(HttpContext context, ParameterInfo parameter)
     {
         return ValueTask.FromResult<TodoBindable?>(new TodoBindable { Id = 1, Title = "I was bound from IBindableFromHttpContext<TodoBindable>.BindAsync!" });
+    }
+}
+
+static class RequestDelegateThunks
+{
+    public static RequestDelegateFactoryFunc Thunk0 = (Delegate handler, EndpointBuilder builder) =>
+    {
+        // Cast to the specific type
+        var userDelegate = (Func<string, string>)handler;
+
+        // Filtered invocation
+        if (builder.FilterFactories.Count > 0)
+        {
+            var routeHandlerFilters = builder.FilterFactories;
+
+            EndpointFilterDelegate filtererdInvocation = ic =>
+            {
+                return ValueTask.FromResult<object?>(userDelegate(ic.GetArgument<string>(0)));
+            };
+
+            var context0 = new EndpointFilterFactoryContext
+            {
+                MethodInfo = userDelegate.Method,
+                ApplicationServices = builder.ApplicationServices,
+            };
+
+            var initialFilteredInvocation = filtererdInvocation;
+
+            for (var i = routeHandlerFilters.Count - 1; i >= 0; i--)
+            {
+                var filterFactory = routeHandlerFilters[i];
+                filtererdInvocation = filterFactory(context0, filtererdInvocation);
+            }
+
+            return async context =>
+            {
+                string name = (string)context.Request.RouteValues["name"]!;
+
+                string result = (string)(await filtererdInvocation(new EndpointFilterInvocationContext<string>(context, name)))!;
+                await context.Response.WriteAsync(result);
+            };
+        }
+
+        return async context =>
+        {
+            string name = (string)context.Request.RouteValues["name"]!;
+
+            var result = userDelegate(name);
+            await context.Response.WriteAsync(result);
+        };
+    };
+}
+
+internal sealed class EndpointFilterInvocationContext<T0> : EndpointFilterInvocationContext, IList<object?>
+{
+    internal EndpointFilterInvocationContext(HttpContext httpContext, T0 arg0)
+    {
+        HttpContext = httpContext;
+        Arg0 = arg0;
+    }
+
+    public object? this[int index]
+    {
+        get => index switch
+        {
+            0 => Arg0,
+            _ => new IndexOutOfRangeException()
+        };
+        set
+        {
+            switch (index)
+            {
+                case 0:
+                    Arg0 = (T0)(object?)value!;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public override HttpContext HttpContext { get; }
+
+    public override IList<object?> Arguments => this;
+
+    public T0 Arg0 { get; set; }
+
+    public int Count => 1;
+
+    public bool IsReadOnly => false;
+
+    public bool IsFixedSize => true;
+
+    public void Add(object? item)
+    {
+        throw new NotSupportedException();
+    }
+
+    public void Clear()
+    {
+        throw new NotSupportedException();
+    }
+
+    public bool Contains(object? item)
+    {
+        return IndexOf(item) >= 0;
+    }
+
+    public void CopyTo(object?[] array, int arrayIndex)
+    {
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            array[arrayIndex++] = Arguments[i];
+        }
+    }
+
+    public IEnumerator<object?> GetEnumerator()
+    {
+        for (int i = 0; i < Arguments.Count; i++)
+        {
+            yield return Arguments[i];
+        }
+    }
+
+    public override T GetArgument<T>(int index)
+    {
+        return index switch
+        {
+            0 => (T)(object)Arg0!,
+            _ => throw new IndexOutOfRangeException()
+        };
+    }
+
+    public int IndexOf(object? item)
+    {
+        return Arguments.IndexOf(item);
+    }
+
+    public void Insert(int index, object? item)
+    {
+        throw new NotSupportedException();
+    }
+
+    public bool Remove(object? item)
+    {
+        throw new NotSupportedException();
+    }
+
+    public void RemoveAt(int index)
+    {
+        throw new NotSupportedException();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
     }
 }

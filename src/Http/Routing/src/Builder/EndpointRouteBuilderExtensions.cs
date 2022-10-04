@@ -216,6 +216,27 @@ public static class EndpointRouteBuilderExtensions
     }
 
     /// <summary>
+    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+    /// for the specified pattern.
+    /// </summary>
+    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+    /// <param name="pattern">The route pattern.</param>
+    /// <param name="handler">The delegate executed when the endpoint is matched.</param>
+    /// <param name="requestDelegateFactoryFunc">
+    /// The delegate used to create a <see cref="RequestDelegate"/> wrapper around <paramref name="handler"/>
+    /// to handle the request.
+    /// </param>
+    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
+    public static RouteHandlerBuilder MapGet(
+        this IEndpointRouteBuilder endpoints,
+        [StringSyntax("Route")] string pattern,
+        Delegate handler,
+        RequestDelegateFactoryFunc requestDelegateFactoryFunc)
+    {
+        return MapMethods(endpoints, pattern, GetVerb, handler, requestDelegateFactoryFunc);
+    }
+
+    /// <summary>
     /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP POST requests
     /// for the specified pattern.
     /// </summary>
@@ -300,7 +321,22 @@ public static class EndpointRouteBuilderExtensions
        Delegate handler)
     {
         ArgumentNullException.ThrowIfNull(httpMethods);
-        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods, isFallback: false);
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods, isFallback: false, requestDelegateFactoryFunc: null);
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026",
+        Justification = "When RequestDelegateFactoryFunc is passed, IEndpointRouteBuilder.Map won't perform any Reflection. (TBD)")]
+    private static RouteHandlerBuilder MapMethods(
+        this IEndpointRouteBuilder endpoints,
+        [StringSyntax("Route")] string pattern,
+        IEnumerable<string> httpMethods,
+        Delegate handler,
+        RequestDelegateFactoryFunc requestDelegateFactoryFunc)
+    {
+        ArgumentNullException.ThrowIfNull(httpMethods);
+        ArgumentNullException.ThrowIfNull(requestDelegateFactoryFunc);
+
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods, isFallback: false, requestDelegateFactoryFunc);
     }
 
     /// <summary>
@@ -334,7 +370,7 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         Delegate handler)
     {
-        return Map(endpoints, pattern, handler, httpMethods: null, isFallback: false);
+        return Map(endpoints, pattern, handler, httpMethods: null, isFallback: false, requestDelegateFactoryFunc: null);
     }
 
     /// <summary>
@@ -389,7 +425,7 @@ public static class EndpointRouteBuilderExtensions
         [StringSyntax("Route")] string pattern,
         Delegate handler)
     {
-        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods: null, isFallback: true);
+        return endpoints.Map(RoutePatternFactory.Parse(pattern), handler, httpMethods: null, isFallback: true, requestDelegateFactoryFunc: null);
     }
 
     [RequiresUnreferencedCode(MapEndpointTrimmerWarning)]
@@ -398,13 +434,14 @@ public static class EndpointRouteBuilderExtensions
         RoutePattern pattern,
         Delegate handler,
         IEnumerable<string>? httpMethods,
-        bool isFallback)
+        bool isFallback,
+        RequestDelegateFactoryFunc? requestDelegateFactoryFunc)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(pattern);
         ArgumentNullException.ThrowIfNull(handler);
 
-        return endpoints.GetOrAddRouteEndpointDataSource().AddRouteHandler(pattern, handler, httpMethods, isFallback);
+        return endpoints.GetOrAddRouteEndpointDataSource().AddRouteHandler(pattern, handler, httpMethods, isFallback, requestDelegateFactoryFunc);
     }
 
     private static RouteEndpointDataSource GetOrAddRouteEndpointDataSource(this IEndpointRouteBuilder endpoints)
