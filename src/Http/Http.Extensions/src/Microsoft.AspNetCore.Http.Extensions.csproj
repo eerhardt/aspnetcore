@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\**\*.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ParameterBindingMethodCache.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)EndpointMetadataPopulator.cs" LinkBase="Shared" />
@@ -39,6 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Diagnostics" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Hosting" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.Extensions.Tests" />
   </ItemGroup>
 
