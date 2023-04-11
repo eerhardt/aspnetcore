@@ -21,9 +21,9 @@ public static class AuthenticationServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddAuthenticationCore();
-        services.AddDataProtection();
+        //services.AddDataProtection();
         services.AddWebEncoders();
-        services.TryAddSingleton<ISystemClock, SystemClock>();
+        //services.TryAddSingleton<ISystemClock, SystemClock>();
         services.TryAddSingleton<IAuthenticationConfigurationProvider, DefaultAuthenticationConfigurationProvider>();
 
         return new AuthenticationBuilder(services);

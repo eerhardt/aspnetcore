@@ -49,6 +49,9 @@
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Net.Http.Headers" />
+
+    <Reference Include="C:\git\azure-activedirectory-identitymodel-extensions-for-dotnet\src\Microsoft.IdentityModel.JsonWebTokens\bin\Debug\net6.0\Microsoft.IdentityModel.JsonWebTokens.dll" />
+    <Reference Include="C:\git\azure-activedirectory-identitymodel-extensions-for-dotnet\src\System.IdentityModel.Tokens.Jwt\bin\Debug\net6.0\System.IdentityModel.Tokens.Jwt.dll" />
   </ItemGroup>
 
 </Project>

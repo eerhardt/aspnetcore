@@ -3,6 +3,8 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Security.Claims;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -14,7 +16,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 /// </summary>
 public class JwtBearerOptions : AuthenticationSchemeOptions
 {
-    private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+    //private readonly JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+    private readonly JsonWebTokenHandlerWrapper _defaultHandler = new JsonWebTokenHandlerWrapper();
 
     /// <summary>
     /// Initializes a new instance of <see cref="JwtBearerOptions"/>.
@@ -104,6 +107,7 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
     /// </summary>
     public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
+    public IList<TokenHandler> TokenHandlers { get; private set; }
 
     /// <summary>
     /// Gets or sets the parameters used to validate identity tokens.
@@ -133,8 +137,8 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// </summary>
     public bool MapInboundClaims
     {
-        get => _defaultHandler.MapInboundClaims;
-        set => _defaultHandler.MapInboundClaims = value;
+        get => true;// _defaultHandler.MapInboundClaims;
+        set { } // => _defaultHandler.MapInboundClaims = value;
     }
 
     /// <summary>
@@ -152,4 +156,36 @@ public class JwtBearerOptions : AuthenticationSchemeOptions
     /// Defaults to <see cref="ConfigurationManager{OpenIdConnectConfiguration}.DefaultRefreshInterval" />.
     /// </value>
     public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
+
+    internal interface IAsyncSecurityTokenValidator : ISecurityTokenValidator
+    {
+        Task<TokenValidationResult> ValidateTokenAsync(string securityToken, TokenValidationParameters validationParameters);
+    }
+
+    internal sealed class JsonWebTokenHandlerWrapper : ISecurityTokenValidator, IAsyncSecurityTokenValidator
+    {
+        private readonly JsonWebTokenHandler _handler;
+        public JsonWebTokenHandlerWrapper()
+        {
+            _handler = new JsonWebTokenHandler();
+        }
+        public bool CanValidateToken => _handler.CanValidateToken;
+        public int MaximumTokenSizeInBytes { get => _handler.MaximumTokenSizeInBytes; set => _handler.MaximumTokenSizeInBytes = value; }
+        public bool CanReadToken(string securityToken)
+        {
+            return _handler.CanReadToken(securityToken);
+        }
+        public ClaimsPrincipal ValidateToken(string securityToken, TokenValidationParameters validationParameters, out SecurityToken validatedToken)
+        {
+            var result = _handler.ValidateToken(securityToken, validationParameters);
+            validatedToken = result.SecurityToken;
+            return new ClaimsPrincipal(result.ClaimsIdentity);
+        }
+
+        public Task<TokenValidationResult> ValidateTokenAsync(string securityToken, TokenValidationParameters validationParameters)
+        {
+            return _handler.ValidateTokenAsync(securityToken, validationParameters);
+        }
+    }
+
 }

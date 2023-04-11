@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
+using static Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -111,7 +112,16 @@ public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
                     ClaimsPrincipal principal;
                     try
                     {
-                        principal = validator.ValidateToken(token, validationParameters, out validatedToken);
+                        if (validator is IAsyncSecurityTokenValidator asyncValidator)
+                        {
+                            var validationResult = await asyncValidator.ValidateTokenAsync(token, validationParameters).ConfigureAwait(false);
+                            validatedToken = validationResult.SecurityToken;
+                            principal = new ClaimsPrincipal(validationResult.ClaimsIdentity);
+                        }
+                        else
+                        {
+                            principal = validator.ValidateToken(token, validationParameters, out validatedToken);
+                        }
                     }
                     catch (Exception ex)
                     {

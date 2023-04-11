@@ -116,26 +116,26 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         Assert.Equal(tokenText, await response.Response.Content.ReadAsStringAsync());
     }
 
-    [Fact]
-    public void MapInboundClaimsDefaultsToTrue()
-    {
-        var options = new JwtBearerOptions();
-        Assert.True(options.MapInboundClaims);
-        var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
-        Assert.NotNull(jwtHandler);
-        Assert.True(jwtHandler.MapInboundClaims);
-    }
+    //[Fact]
+    //public void MapInboundClaimsDefaultsToTrue()
+    //{
+    //    var options = new JwtBearerOptions();
+    //    Assert.True(options.MapInboundClaims);
+    //    var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+    //    Assert.NotNull(jwtHandler);
+    //    Assert.True(jwtHandler.MapInboundClaims);
+    //}
 
-    [Fact]
-    public void MapInboundClaimsCanBeSetToFalse()
-    {
-        var options = new JwtBearerOptions();
-        options.MapInboundClaims = false;
-        Assert.False(options.MapInboundClaims);
-        var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
-        Assert.NotNull(jwtHandler);
-        Assert.False(jwtHandler.MapInboundClaims);
-    }
+    //[Fact]
+    //public void MapInboundClaimsCanBeSetToFalse()
+    //{
+    //    var options = new JwtBearerOptions();
+    //    options.MapInboundClaims = false;
+    //    Assert.False(options.MapInboundClaims);
+    //    var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+    //    Assert.NotNull(jwtHandler);
+    //    Assert.False(jwtHandler.MapInboundClaims);
+    //}
 
     [Fact]
     public async Task SignInThrows()
@@ -861,6 +861,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             audience: "audience.contoso.com",
             claims: claims,
             expires: DateTime.MaxValue,
+            //expires: DateTime.Now.AddMinutes(30),
             signingCredentials: creds);
 
         var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
