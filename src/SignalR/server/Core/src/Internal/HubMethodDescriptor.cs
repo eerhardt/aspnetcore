@@ -35,27 +35,22 @@ internal sealed class HubMethodDescriptor
             ? MethodExecutor.AsyncResultType!
             : MethodExecutor.MethodReturnType;
 
-        foreach (var returnType in NonAsyncReturnType.GetInterfaces().Concat(NonAsyncReturnType.AllBaseTypes()))
+        var asyncEnumerableType = ReflectionHelper.GetIAsyncEnumerableInterface(NonAsyncReturnType);
+        if (asyncEnumerableType is not null)
         {
-            if (!returnType.IsGenericType)
+            StreamReturnType = asyncEnumerableType.GetGenericArguments()[0];
+            _makeCancelableEnumeratorMethodInfo = MakeCancelableAsyncEnumeratorMethod;
+        }
+        else
+        {
+            foreach (var returnType in NonAsyncReturnType.AllBaseTypes())
             {
-                continue;
-            }
-
-            var openReturnType = returnType.GetGenericTypeDefinition();
-
-            if (openReturnType == typeof(IAsyncEnumerable<>))
-            {
-                StreamReturnType = returnType.GetGenericArguments()[0];
-                _makeCancelableEnumeratorMethodInfo = MakeCancelableAsyncEnumeratorMethod;
-                break;
-            }
-
-            if (openReturnType == typeof(ChannelReader<>))
-            {
-                StreamReturnType = returnType.GetGenericArguments()[0];
-                _makeCancelableEnumeratorMethodInfo = MakeAsyncEnumeratorFromChannelMethod;
-                break;
+                if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(ChannelReader<>))
+                {
+                    StreamReturnType = returnType.GetGenericArguments()[0];
+                    _makeCancelableEnumeratorMethodInfo = MakeAsyncEnumeratorFromChannelMethod;
+                    break;
+                }
             }
         }
 

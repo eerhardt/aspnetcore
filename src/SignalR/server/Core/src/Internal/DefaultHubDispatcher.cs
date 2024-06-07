@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
@@ -16,7 +17,7 @@ using Log = Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcherLog;
 
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal sealed partial class DefaultHubDispatcher<THub> : HubDispatcher<THub> where THub : Hub
+internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : HubDispatcher<THub> where THub : Hub
 {
     private static readonly string _fullHubName = typeof(THub).FullName ?? typeof(THub).Name;
 
