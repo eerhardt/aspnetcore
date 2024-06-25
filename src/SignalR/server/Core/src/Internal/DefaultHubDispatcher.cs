@@ -32,6 +32,12 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
     private readonly Func<HubLifetimeContext, Exception?, Task>? _onDisconnectedMiddleware;
     private readonly HubLifetimeManager<THub> _hubLifetimeManager;
 
+    [FeatureSwitchDefinition("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport")]
+    [FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
+    [FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
+    private static bool CustomAwaitableSupport { get; } =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.SignalR.Hub.CustomAwaitableSupport", out bool customAwaitableSupport) ? customAwaitableSupport : true;
+
     public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, bool enableDetailedErrors,
         bool disableImplicitFromServiceParameters, ILogger<DefaultHubDispatcher<THub>> logger, List<IHubFilter>? hubFilters, HubLifetimeManager<THub> lifetimeManager)
     {
@@ -762,7 +768,10 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 throw new NotSupportedException($"Duplicate definitions of '{methodName}'. Overloading is not supported.");
             }
 
-            var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
+            var executor = CustomAwaitableSupport
+                ? ObjectMethodExecutor.Create(methodInfo, hubTypeInfo)
+                : ObjectMethodExecutor.CreateTrimAotCompatible(methodInfo, hubTypeInfo);
+
             var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
             _methods[methodName] = new HubMethodDescriptor(executor, serviceProviderIsService, authorizeAttributes);
             _cachedMethodNames.Add(methodName);
