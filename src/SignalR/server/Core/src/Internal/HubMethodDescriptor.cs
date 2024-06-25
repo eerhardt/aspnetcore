@@ -276,13 +276,14 @@ internal sealed class HubMethodDescriptor
         return type;
     }
 
-    private static Type ValidateStreamType(Type streamType)
+    private Type ValidateStreamType(Type streamType)
     {
         if (!RuntimeFeature.IsDynamicCodeSupported && streamType.IsValueType)
         {
             // NativeAOT apps are not able to stream IAsyncEnumerable and ChannelReader of ValueTypes
             // since we cannot create AsyncEnumerableAdapters.MakeCancelableAsyncEnumerator and AsyncEnumerableAdapters.MakeAsyncEnumeratorFromChannel methods with a generic ValueType.
-            throw new InvalidOperationException($"Unable to stream an item with type '{streamType}' because it is a ValueType. Native code to support streaming this ValueType will not be available with native AOT.");
+            var methodInfo = MethodExecutor.MethodInfo;
+            throw new InvalidOperationException($"Unable to stream an item with type '{streamType}' on method '{methodInfo.DeclaringType}.{methodInfo.Name}' because it is a ValueType. Native code to support streaming this ValueType will not be available with native AOT.");
         }
 
         return streamType;

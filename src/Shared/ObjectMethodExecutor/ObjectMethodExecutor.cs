@@ -409,15 +409,6 @@ internal sealed class ObjectMethodExecutor
             return true;
         }
 
-        // check for Task<T> (or a derived type)
-        if (methodReturnType.GetMemberWithSameMetadataDefinitionAs(_taskGetAwaiterMethodInfo) is MethodInfo taskGetAwaiterMethodInfo &&
-            taskGetAwaiterMethodInfo.ReturnType.GetMemberWithSameMetadataDefinitionAs(_taskAwaiterGetResultMethodInfo) is MethodInfo taskAwaiterGetResultMethodInfo)
-        {
-            resultType = taskAwaiterGetResultMethodInfo.ReturnType;
-            return true;
-        }
-
-        // check for a type derived from Task that isn't Task<T>
         var currentType = methodReturnType;
         while (currentType is not null)
         {
@@ -426,6 +417,16 @@ internal sealed class ObjectMethodExecutor
                 resultType = typeof(void);
                 return true;
             }
+
+            if (currentType.IsGenericType && currentType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var taskGetAwaiterMethodInfo = (MethodInfo)methodReturnType.GetMemberWithSameMetadataDefinitionAs(_taskGetAwaiterMethodInfo);
+                var taskAwaiterGetResultMethodInfo = (MethodInfo)taskGetAwaiterMethodInfo.ReturnType.GetMemberWithSameMetadataDefinitionAs(_taskAwaiterGetResultMethodInfo);
+
+                resultType = taskAwaiterGetResultMethodInfo.ReturnType;
+                return true;
+            }
+
             currentType = currentType.BaseType;
         }
 
